@@ -12,18 +12,56 @@ datasource db {
   provider = "postgresql"
 }
 
+enum Category {
+  PAYMENT
+  ACCOUNT
+  TECHNICAL
+  SHIPPING
+  OTHER
+}
 
-model User { 
-  id    Int     @id @default(autoincrement()) 
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum Status {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+
+model User {
+  id    Int     @id @default(autoincrement())
+
   email String  @unique
   name  String?
-  posts Post[]
-} 
-model Post { 
-  id        Int     @id @default(autoincrement()) 
-  title     String
-  content   String?
-  published Boolean @default(false) 
-  author    User    @relation(fields: [authorId], references: [id]) 
-  authorId  Int
-} 
+
+  tickets Ticket[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
+model Ticket {
+  id String @id @default(uuid())
+
+  userId Int
+  user User @relation(fields: [userId], references: [id])
+
+  title String
+  description String
+
+  category Category?
+  priority Priority?
+
+  status Status @default(OPEN)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
