@@ -19,7 +19,11 @@ const registerUser = async (req: Request, res: Response) => {
         }
 
         const user = await prisma.user.create({
-            data: validatedData
+            data: {
+                // ensure password field exists for Prisma create input
+                ...validatedData as any,
+                password: (validatedData as any).password ?? ""
+            }
         })
 
         return res.status(201).json({
@@ -36,11 +40,37 @@ const registerUser = async (req: Request, res: Response) => {
 
 }
 
+const loginUser = async (req: Request, res: Response) => {
+    try {
+        const { email, password } = req.body
+
+        //check if user exist or not
+        const user = await prisma.user.findUnique({
+            where: {
+                email: email
+            }
+        })
+
+        if (!user) {
+            throw new Error("user not found")
+        }
+
+        return res.status(200).json({
+            message: "login successful",
+            data: user
+        })
+    } catch (error) {
+        return res.status(400).json({
+            message: "login failed"
+        })
+    }
+}
+
 const createTicket = async (req: Request, res: Response) => {
     try {
         const ticketValidationData = createTicketSchema.parse(req.body)
 
-        const aiResult = await analyzeTicket(ticketValidationData.description)
+        const aiResult = await analyzeTicket(ticketValidationData.description, ticketValidationData.userId)
         const parsedAiResult = JSON.parse(aiResult!)
 
         console.log(parsedAiResult);
@@ -182,11 +212,10 @@ const getAnalytics = async (req: Request, res: Response) => {
 
         return res.status(200).json({
             totalTickets,
-            byCategory: Object.fromEntries(byCategory.map((c: { category: string; _count: number }) => [c.category, c._count])),
-            byPriority: Object.fromEntries(byPriority.map((p: { priority: string; _count: number }) => [p.priority, p._count])),
-            byStatus: Object.fromEntries(byStatus.map((s: { status: string; _count: number }) => [s.status, s._count]))
+            byCategory: Object.fromEntries(byCategory.map(c => [c.category ?? "UNKNOWN", c._count])),
+            byPriority: Object.fromEntries(byPriority.map(p => [p.priority ?? "UNKNOWN", p._count])),
+            byStatus: Object.fromEntries(byStatus.map(s => [s.status ?? "UNKNOWN", s._count]))
         })
-
     } catch (error) {
         const message = error instanceof Error ? error.message : "Unknown error"
         return res.status(500).json({ message })
@@ -231,26 +260,26 @@ const addMessage = async (req: Request, res: Response) => {
 }
 
 
-const getTicketMessages = async(req:Request, res:Response)=> {
+const getTicketMessages = async (req: Request, res: Response) => {
     try {
         const ticketId = String(req.params.ticketId)
 
         // find messages
         const messages = await prisma.ticketMessage.findMany({
-            where:{
-                ticketId:ticketId
+            where: {
+                ticketId: ticketId
             },
-            orderBy:{
-                createdAt:"asc"
+            orderBy: {
+                createdAt: "asc"
             }
         })
 
         return res.status(200).json({
-            message:"messages fetched successfully",
-            ticketMessages:messages
+            message: "messages fetched successfully",
+            ticketMessages: messages
         })
 
-    } catch (error:unknown) {
+    } catch (error: unknown) {
         const message = error instanceof Error ? error.message : "unkown"
         return res.status(500).json({
             message
