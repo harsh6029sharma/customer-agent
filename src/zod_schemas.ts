@@ -1,15 +1,14 @@
 import * as z from 'zod'
 
 export const createUserSchema = z.object({
-    email:z.string(),
+    email:z.email("Invalid email format"),
     name:z.string()
 })
 
 export const createTicketSchema = z.object({
     userId:z.number(),
     title:z.string(),
-    description:z.string(),
-    status:z.string()
+    description:z.string()
 })
 
 export const TicketAnalysisSchema = z.object({
@@ -24,5 +23,6 @@ export const TicketAnalysisSchema = z.object({
     "LOW",
     "MEDIUM",
     "HIGH"
-  ])
+  ]),
+  suggestedReply:z.string()
 });

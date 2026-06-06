@@ -59,8 +59,9 @@ model Ticket {
 
   category Category?
   priority Priority?
+  suggestedReply String?
 
-  status Status @default(OPEN)
+  status Status? @default(OPEN)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

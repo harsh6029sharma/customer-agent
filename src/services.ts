@@ -1,43 +1,32 @@
-import { GoogleGenAI } from '@google/genai'
+import { ChatGroq } from "@langchain/groq"
+import { ChatPromptTemplate } from "@langchain/core/prompts"
+import { JsonOutputParser } from "@langchain/core/output_parsers"
 
-const ai = new GoogleGenAI({
-    apiKey: process.env.GEMINI_API_KEY!
+const llm = new ChatGroq({
+    apiKey: process.env.GROQ_API_KEY!,
+    model: "llama-3.1-8b-instant",
+    temperature: 0
 })
 
+const parser = new JsonOutputParser()
+
+const prompt = ChatPromptTemplate.fromTemplate(`
+You are a customer support AI.
+Analyze this support ticket and return JSON with 3 fields:
+1. category: PAYMENT | ACCOUNT | TECHNICAL | SHIPPING | OTHER
+2. priority: LOW | MEDIUM | HIGH
+3. suggestedReply: A professional and empathetic reply to the customer
+
+Ticket: "{description}"
+
+Return ONLY JSON:
+{{"category":"PAYMENT","priority":"HIGH","suggestedReply":"Dear customer, we sincerely apologize for the inconvenience..."}}
+`)
+
+const chain = prompt.pipe(llm).pipe(parser)
+
 export const analyzeTicket = async (description: string) => {
-    const prompt = `
-You are a customer support classifier.
-
-Classify the ticket into:
-
-Category:
-- PAYMENT
-- ACCOUNT
-- TECHNICAL
-- SHIPPING
-- OTHER
-
-Priority:
-- LOW
-- MEDIUM
-- HIGH
-
-Ticket:
-"${description}"
-
-Return ONLY JSON.
-
-Example:
-{
-  "category":"PAYMENT",
-  "priority":"HIGH"
+    const result = await chain.invoke({ description })
+    return JSON.stringify(result)
 }
-`;
 
-    const response = await ai.models.generateContent({
-        model:"gemini-3.5-flash",
-        contents:prompt
-    })
-
-    return response.text
-}
