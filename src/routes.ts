@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createTicket,getUserTickets,getTicketById,registerUser,updateTicketById, getAnalytics, addMessage, getTicketMessages } from "./controllers";
+import { createTicket,getUserTickets,getTicketById,registerUser,updateTicketById, getAnalytics, addMessage, getTicketMessages } from "./controllers.js";
 
 const router = Router()
 
