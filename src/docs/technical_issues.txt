@@ -1,0 +1,5 @@
+Common Technical Issues:
+- API 401 error: Token expired, regenerate from Settings > API Keys
+- App crash on startup: Clear cache and reinstall
+- OTP not received: Check spam folder, retry after 30 seconds
+- Login failed: Reset password from forgot password link

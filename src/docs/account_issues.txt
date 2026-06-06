@@ -1,0 +1,5 @@
+Account Related Issues:
+- To reset password: Go to Login > Forgot Password > Enter email
+- To update phone number: Settings > Profile > Edit > Verify OTP
+- Account suspended: Contact support with your registered email
+- To delete account: Settings > Privacy > Delete Account

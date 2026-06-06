@@ -1,0 +1,6 @@
+Order Tracking Guide:
+- To track your order, go to My Orders section in the app
+- Click on the order you want to track
+- Real-time tracking is available once the order is picked up
+- Orders are typically delivered within 30-45 minutes
+- If order is delayed by more than 1 hour, you will receive an automatic notification

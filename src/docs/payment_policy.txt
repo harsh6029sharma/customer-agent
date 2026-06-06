@@ -1,0 +1,5 @@
+Payment & Refund Policy:
+- Refunds are processed within 5-7 business days
+- If payment is deducted twice, raise a ticket and refund will be initiated within 24 hours
+- Supported payment methods: UPI, Credit Card, Debit Card, Net Banking
+- COD is available for orders below Rs 500

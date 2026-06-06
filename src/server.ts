@@ -14,11 +14,13 @@ app.use(cookieParser())
 
 const PORT = process.env.PORT||3000
 
-import userRouter from './routes'
+import userRouter from './routes.js'
+import { ingestDocs } from './rag/ingest.js'
 
 app.use("/api/users", userRouter)
 
 
-app.listen(PORT, ()=>{
+app.listen(PORT, async()=>{
+    await ingestDocs()
     console.log(`Server is listening on port:${PORT}`)
 })

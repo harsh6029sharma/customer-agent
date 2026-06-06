@@ -1,9 +1,7 @@
 import { type Request, type Response } from "express"
-import { prisma } from "../lib/prisma"
-import { createUserSchema, createTicketSchema, TicketAnalysisSchema } from "./zod_schemas"
-import { analyzeTicket } from "./services"
-import { promise, string } from "zod"
-
+import { prisma } from "../lib/prisma.js"
+import { createUserSchema, createTicketSchema, TicketAnalysisSchema } from "./zod_schemas.js"
+import { analyzeTicket } from "./services.js"
 
 const registerUser = async (req: Request, res: Response) => {
     try {
@@ -58,7 +56,7 @@ const createTicket = async (req: Request, res: Response) => {
 
                 category: validateAiResult.category,
                 priority: validateAiResult.priority,
-                suggestedReply:validateAiResult.suggestedReply
+                suggestedReply: validateAiResult.suggestedReply
             }
         })
 
@@ -133,7 +131,7 @@ const getTicketById = async (req: Request, res: Response) => {
 const updateTicketById = async (req: Request, res: Response) => {
     try {
         const ticketId = String(req.params.ticketId)
-        const {status} = req.body
+        const { status } = req.body
         // console.log(status);
         // console.log(ticketId);
         const updatedTicket = await prisma.ticket.update({
@@ -146,47 +144,47 @@ const updateTicketById = async (req: Request, res: Response) => {
         })
 
         return res.status(201).json({
-            message:"ticket updated successfully",
-            updateTicket:updatedTicket
+            message: "ticket updated successfully",
+            updateTicket: updatedTicket
         })
     } catch (error) {
         console.log(error);
         return res.status(400).json({
-            message:"something went wrong while updating ticket"
+            message: "something went wrong while updating ticket"
         })
     }
 }
 
 // for dashboard
-const getAnalytics = async(req:Request, res:Response)=> {
+const getAnalytics = async (req: Request, res: Response) => {
     try {
-        
+
         const [totalTickets, byCategory, byPriority, byStatus] = await Promise.all([
 
             // total tickets
             prisma.ticket.count(),
 
             prisma.ticket.groupBy({
-                by:["category"],
-                _count:true
+                by: ["category"],
+                _count: true
             }),
 
             prisma.ticket.groupBy({
-                by:["priority"],
-                _count:true
+                by: ["priority"],
+                _count: true
             }),
 
             prisma.ticket.groupBy({
-                by:["status"],
-                _count:true
+                by: ["status"],
+                _count: true
             })
         ])
 
         return res.status(200).json({
             totalTickets,
-            byCategory:Object.fromEntries(byCategory.map(c => [c.category, c._count])),
-            byPriority:Object.fromEntries(byPriority.map(p => [p.priority, p._count])),
-            byStatus:Object.fromEntries(byStatus.map(s => [s.status, s._count]))
+            byCategory: Object.fromEntries(byCategory.map((c: { category: string; _count: number }) => [c.category, c._count])),
+            byPriority: Object.fromEntries(byPriority.map((p: { priority: string; _count: number }) => [p.priority, p._count])),
+            byStatus: Object.fromEntries(byStatus.map((s: { status: string; _count: number }) => [s.status, s._count]))
         })
 
     } catch (error) {
@@ -195,11 +193,80 @@ const getAnalytics = async(req:Request, res:Response)=> {
     }
 }
 
+const addMessage = async (req: Request, res: Response) => {
+    try {
+        const ticketId = String(req.params.ticketId)
+
+        const { message, sender } = req.body
+
+        // find ticket in db
+        const ticket = await prisma.ticket.findUnique({
+            where: {
+                id: ticketId
+            }
+        })
+
+        if (!ticket) {
+            return res.status(404).json({
+                message: "ticket not found"
+            })
+        }
+
+        const newMessage = await prisma.ticketMessage.create({
+            data: {
+                ticketId,
+                message,
+                sender
+            }
+        })
+
+        return res.status(201).json({
+            message: "ticket message added successfully",
+            ticketMessage: newMessage
+        })
+    } catch (error: unknown) {
+        const message = error instanceof Error ? error.message : "Unknown error"
+        return res.status(500).json({ message })
+    }
+}
+
+
+const getTicketMessages = async(req:Request, res:Response)=> {
+    try {
+        const ticketId = String(req.params.ticketId)
+
+        // find messages
+        const messages = await prisma.ticketMessage.findMany({
+            where:{
+                ticketId:ticketId
+            },
+            orderBy:{
+                createdAt:"asc"
+            }
+        })
+
+        return res.status(200).json({
+            message:"messages fetched successfully",
+            ticketMessages:messages
+        })
+
+    } catch (error:unknown) {
+        const message = error instanceof Error ? error.message : "unkown"
+        return res.status(500).json({
+            message
+        })
+    }
+}
+
+
+
 export {
     registerUser,
     createTicket,
     getUserTickets,
     getTicketById,
     updateTicketById,
-    getAnalytics
+    getAnalytics,
+    addMessage,
+    getTicketMessages
 }
