@@ -2,7 +2,8 @@ import * as z from 'zod'
 
 export const createUserSchema = z.object({
     email:z.email("Invalid email format"),
-    name:z.string()
+    password:z.string(),
+    name:z.string().optional()
 })
 
 export const createTicketSchema = z.object({

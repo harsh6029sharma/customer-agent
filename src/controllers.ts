@@ -2,6 +2,8 @@ import { type Request, type Response } from "express"
 import { prisma } from "../lib/prisma.js"
 import { createUserSchema, createTicketSchema, TicketAnalysisSchema } from "./zod_schemas.js"
 import { analyzeTicket } from "./services.js"
+import { checkPassword, hashPassword } from "./utils.js"
+import bcrypt from 'bcrypt'
 
 const registerUser = async (req: Request, res: Response) => {
     try {
@@ -18,11 +20,13 @@ const registerUser = async (req: Request, res: Response) => {
             throw new Error("user already exist with this email")
         }
 
+        const hashedPassword = await hashPassword(validatedData.password)
+
         const user = await prisma.user.create({
             data: {
-                // ensure password field exists for Prisma create input
-                ...validatedData as any,
-                password: (validatedData as any).password ?? ""
+                name:validatedData.name,
+                email:validatedData.email,
+                password:hashedPassword
             }
         })
 
@@ -42,23 +46,25 @@ const registerUser = async (req: Request, res: Response) => {
 
 const loginUser = async (req: Request, res: Response) => {
     try {
-        const { email, password } = req.body
+        const validatedData = createUserSchema.parse(req.body)
 
-        //check if user exist or not
         const user = await prisma.user.findUnique({
-            where: {
-                email: email
+            where:{
+                email:validatedData.email
             }
         })
 
-        if (!user) {
-            throw new Error("user not found")
-        }
+        const hashedPassword = user?.password
 
-        return res.status(200).json({
-            message: "login successful",
-            data: user
-        })
+        const isPasswordCorrect = await checkPassword(validatedData.password, hashedPassword!)
+
+        if(!isPasswordCorrect){
+            
+        }
+        // return res.status(200).json({
+        //     message: "login successful",
+        //     data: user
+        // })
     } catch (error) {
         return res.status(400).json({
             message: "login failed"
@@ -291,6 +297,7 @@ const getTicketMessages = async (req: Request, res: Response) => {
 
 export {
     registerUser,
+    loginUser,
     createTicket,
     getUserTickets,
     getTicketById,
