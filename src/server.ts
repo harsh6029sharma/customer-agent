@@ -1,5 +1,4 @@
 import express from 'express'
-import type { Request,Response } from 'express'
 import cookieParser from 'cookie-parser'
 import dotenv from 'dotenv'
 

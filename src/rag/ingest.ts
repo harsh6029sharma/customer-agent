@@ -4,7 +4,7 @@ import fs from 'fs'
 import path from 'path'
 
 const client = new ChromaClient({
-    host: 'localhost',
+    host: "chromadb",
     port: 8000
 })
 
