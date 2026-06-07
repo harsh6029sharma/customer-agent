@@ -1,9 +1,49 @@
 import { type Request, type Response } from "express"
 import { prisma } from "../lib/prisma.js"
-import { createUserSchema, createTicketSchema, TicketAnalysisSchema } from "./zod_schemas.js"
+import { createUserSchema, createTicketSchema, TicketAnalysisSchema, loginUserSchema } from "./zod_schemas.js"
 import { analyzeTicket } from "./services.js"
 import { checkPassword, hashPassword } from "./utils.js"
-import bcrypt from 'bcrypt'
+import { ApiError } from "./ApiError.js"
+import {generateAccessToken,generateRefreshToken} from './utils.js'
+import { ApiResponse } from "./ApiResponse.js"
+
+
+const generateAccessAndRefreshToken = async (userId: number): Promise<{ accessToken: string, refreshToken: string }> => {
+
+  try {
+    const user = await prisma.user.findUnique({
+      where: {
+        id: userId,
+      }
+    })
+
+    if (!user) {
+      throw new ApiError(404, "user not found")
+    }
+
+    const accessToken = generateAccessToken(user)
+    const refreshToken = generateRefreshToken(user)
+
+    user.refreshToken = refreshToken
+
+    await prisma.user.update({
+      where: {
+        id: userId
+      },
+      data: {
+        refreshToken: refreshToken
+      }
+    })
+
+    return { accessToken, refreshToken }
+
+  } catch (error) {
+
+    throw new ApiError(500, "something went wrong while generating access token and refresh token")
+  }
+
+}
+
 
 const registerUser = async (req: Request, res: Response) => {
     try {
@@ -24,15 +64,17 @@ const registerUser = async (req: Request, res: Response) => {
 
         const user = await prisma.user.create({
             data: {
-                name:validatedData.name,
+                name:validatedData.name ?? null,
                 email:validatedData.email,
                 password:hashedPassword
             }
         })
 
+        const {password, refreshToken, ...safeUser} = user
+
         return res.status(201).json({
             message: "user created successfully",
-            data: user
+            data: safeUser
         })
 
 
@@ -46,7 +88,11 @@ const registerUser = async (req: Request, res: Response) => {
 
 const loginUser = async (req: Request, res: Response) => {
     try {
-        const validatedData = createUserSchema.parse(req.body)
+        const validatedData = loginUserSchema.parse(req.body)
+
+        if(!validatedData.email){
+            throw new ApiError(400, "email is required for login")
+        }
 
         const user = await prisma.user.findUnique({
             where:{
@@ -54,17 +100,48 @@ const loginUser = async (req: Request, res: Response) => {
             }
         })
 
-        const hashedPassword = user?.password
+        if(!user){
+            throw new ApiError(404, "User not found")
+        }
 
-        const isPasswordCorrect = await checkPassword(validatedData.password, hashedPassword!)
+        const hashedPassword = user.password
+
+        const isPasswordCorrect = await checkPassword(validatedData.password, hashedPassword)
 
         if(!isPasswordCorrect){
-            
+            throw new ApiError(401, "Password is incorrect")
         }
-        // return res.status(200).json({
-        //     message: "login successful",
-        //     data: user
-        // })
+
+        const {accessToken , refreshToken} = await generateAccessAndRefreshToken(user.id)
+
+        const loggedInUser = await prisma.user.findUnique({
+            where:{
+                id: user.id
+            },
+            select:{
+                name:true,
+                email:true
+            }
+
+        })
+
+        const Options = {
+            httpOnly: true,
+            secure:true
+        }
+
+        return res.status(200)
+        .cookie("accessToken",accessToken,Options)
+        .cookie("refreshToken",refreshToken,Options)
+        .json(
+            new ApiResponse(
+                200, {
+                    user: loggedInUser, accessToken
+                },
+                "User logged in successfully"
+            )
+        )
+
     } catch (error) {
         return res.status(400).json({
             message: "login failed"
@@ -304,5 +381,6 @@ export {
     updateTicketById,
     getAnalytics,
     addMessage,
-    getTicketMessages
+    getTicketMessages,
+    generateAccessAndRefreshToken
 }

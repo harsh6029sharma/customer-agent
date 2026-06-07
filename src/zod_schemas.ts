@@ -6,6 +6,11 @@ export const createUserSchema = z.object({
     name:z.string().optional()
 })
 
+export const loginUserSchema = z.object({
+    email:z.email("Invalid email format"),
+    password:z.string()
+})
+
 export const createTicketSchema = z.object({
     userId:z.number(),
     title:z.string(),
