@@ -14,12 +14,12 @@ app.use(cookieParser())
 
 const PORT = process.env.PORT||3000
 
-import userRouter from './routes/user.route.js'
+import userRouterV1 from './routes/user.route.js'
+import ticketRouterV1 from './routes/ticket.route.js'
 import { ingestDocs } from './rag/ingest.js'
-import ticketRouter from './routes/ticket.route.js'
 
-app.use("/api/users", userRouter)
-app.use("/api/tickets", ticketRouter)
+app.use("/api/v1/users", userRouterV1)
+app.use("/api/v1/tickets", ticketRouterV1)
 
 app.listen(PORT, async()=>{
     await ingestDocs()
