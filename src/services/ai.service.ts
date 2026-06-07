@@ -1,11 +1,11 @@
 import { ChatGroq } from "@langchain/groq"
 import { ChatPromptTemplate } from "@langchain/core/prompts"
 import { JsonOutputParser } from "@langchain/core/output_parsers"
-import { searchDocs } from "./rag/search.js"
+import { searchDocs } from "../rag/search.js"
 import { createAgent } from 'langchain'
 import { tool } from "@langchain/core/tools"
 import * as z from 'zod'
-import { prisma } from "../lib/prisma.js"
+import { prisma } from "../../lib/prisma.js"
 
 // llm
 const llm = new ChatGroq({
