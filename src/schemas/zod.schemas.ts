@@ -12,7 +12,6 @@ export const loginUserSchema = z.object({
 })
 
 export const createTicketSchema = z.object({
-    userId:z.number(),
     title:z.string(),
     description:z.string()
 })

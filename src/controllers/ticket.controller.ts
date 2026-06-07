@@ -11,7 +11,12 @@ const createTicket = asyncHandler(async (req: Request, res: Response) => {
 
     const ticketValidationData = createTicketSchema.parse(req.body)
 
-    const aiResult = await analyzeTicket(ticketValidationData.description, ticketValidationData.userId)
+    const decodedToken = req.user
+
+    console.log(decodedToken)
+
+
+    const aiResult = await analyzeTicket(ticketValidationData.description, decodedToken?.id)
 
     if (!aiResult) {
         throw new ApiError(400, "AI doesn't response")
@@ -28,7 +33,7 @@ const createTicket = asyncHandler(async (req: Request, res: Response) => {
 
     const ticket = await prisma.ticket.create({
         data: {
-            userId: ticketValidationData.userId,
+            userId: decodedToken.id,
             title: ticketValidationData.title,
             description: ticketValidationData.description,
 
@@ -46,7 +51,9 @@ const createTicket = asyncHandler(async (req: Request, res: Response) => {
 
 
 const getUserTickets = asyncHandler(async (req: Request, res: Response) => {
-    const userId = Number(req.params.id)
+
+    const decodedToken = req.user
+    const userId = decodedToken?.id
 
     const tickets = await prisma.ticket.findMany({
         where: {
@@ -65,8 +72,11 @@ const getUserTickets = asyncHandler(async (req: Request, res: Response) => {
 
 })
 
+
 const getTicketById = asyncHandler(async (req: Request, res: Response) => {
+
     const ticketId = String(req.params.ticketId)
+
     console.log(ticketId);
 
     const ticket = await prisma.ticket.findUnique({
@@ -110,6 +120,19 @@ const updateTicketById = asyncHandler(async (req: Request, res: Response) => {
 })
 
 const getAnalytics = asyncHandler(async (req: Request, res: Response) => {
+
+    const decodedToken = req.user
+    const userId = decodedToken?.id
+    const user = await prisma.user.findUnique({
+        where: {
+            id: userId
+        }
+    })
+
+    if (!user) {
+        throw new ApiError(404, "User not loggedin")
+    }
+
     const [totalTickets, byCategory, byPriority, byStatus] = await Promise.all([
 
         // total tickets
@@ -131,6 +154,8 @@ const getAnalytics = asyncHandler(async (req: Request, res: Response) => {
         })
     ])
 
+    console.log("analytics for user:", user);
+
     return res.status(200).json(
         new ApiResponse(200,
             {
@@ -142,11 +167,12 @@ const getAnalytics = asyncHandler(async (req: Request, res: Response) => {
             "dashboard analytics fetched successfully"
         )
     )
-    
+
 })
 
 
 const addMessage = asyncHandler(async (req: Request, res: Response) => {
+    
     const ticketId = String(req.params.ticketId)
 
     const { message, sender } = req.body

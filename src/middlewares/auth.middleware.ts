@@ -40,6 +40,7 @@ const verifyJwt = async (req: Request, _: Response, next: NextFunction) => {
         }
 
         req.user = decodedToken
+        console.log(req.user)
 
         next()
 
