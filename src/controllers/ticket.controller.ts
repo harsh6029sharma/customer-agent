@@ -55,19 +55,39 @@ const getUserTickets = asyncHandler(async (req: Request, res: Response) => {
     const decodedToken = req.user
     const userId = decodedToken?.id
 
-    const tickets = await prisma.ticket.findMany({
-        where: {
-            userId: userId
-        }
-    })
-    console.log(tickets);
+    // pagination parameters take from the url
+    const page = Number(req.query.page) || 1
+    const limit = Number(req.query.limit) || 10
+
+    const skip = (page-1)*limit
+
+    // pagination
+    const [tickets, total] = await Promise.all([
+        prisma.ticket.findMany({
+            where:{userId},
+            orderBy:{createdAt:"desc"},
+            skip,
+            take:limit
+        }),
+        prisma.ticket.count({where:{userId}})
+    ])
 
     if (tickets.length === 0) {
         throw new ApiError(404, "No tickets found")
     }
 
     return res.status(200).json(
-        new ApiResponse(200, tickets, "ticket fetched successfully")
+        new ApiResponse(200,
+            {
+                tickets,
+                pagination:{
+                    total,
+                    page,
+                    limit,
+                    totalPages:Math.ceil(total/limit)
+                }
+            },
+            "ticket fetched successfully")
     )
 
 })
@@ -123,13 +143,8 @@ const getAnalytics = asyncHandler(async (req: Request, res: Response) => {
 
     const decodedToken = req.user
     const userId = decodedToken?.id
-    const user = await prisma.user.findUnique({
-        where: {
-            id: userId
-        }
-    })
 
-    if (!user) {
+    if (!userId) {
         throw new ApiError(404, "User not loggedin")
     }
 
@@ -153,8 +168,6 @@ const getAnalytics = asyncHandler(async (req: Request, res: Response) => {
             _count: true
         })
     ])
-
-    console.log("analytics for user:", user);
 
     return res.status(200).json(
         new ApiResponse(200,
