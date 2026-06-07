@@ -8,3 +8,5 @@
 - [ ] Chunking — RecursiveCharacterTextSplitter add karo ingest mein
 - [ ] Rate limiting — express-rate-limit
 - [ ] Pagination — getAllTickets mein
+
+- [ ] Role based access control (ADMIN, AGENT, USER)

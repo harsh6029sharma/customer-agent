@@ -86,38 +86,6 @@ Return ONLY JSON:
 const classifyChain = classifyPrompt.pipe(llm).pipe(parser)
 
 
-// step2 : RAG reply prompt
-const ragReplyPrompt = ChatPromptTemplate.fromTemplate(`
-    You are a customer support AI.
-Use the following internal documentation to answer the customer's ticket.
-
-Documentation:
-{context}
-
-Customer Ticket: "{description}"
-
-Draft a professional and empathetic reply based on the documentation.
-Return ONLY JSON:
-{{"suggestedReply":"your reply here"}}
-`)
-
-const ragReplyChain = ragReplyPrompt.pipe(llm).pipe(parser)
-
-
-// step 3 : direct reply 
-const directReplyPrompt = ChatPromptTemplate.fromTemplate(`
-    You are a customer support AI.
-Draft a professional and empathetic reply for this ticket.
-
-Customer Ticket: "{description}"
-
-Return ONLY JSON:
-{{"suggestedReply":"your reply here"}}
-`)
-
-const directReplyChain = directReplyPrompt.pipe(llm).pipe(parser)
-
-
 export const analyzeTicket = async (description: string, userId: number) => {
 
     // step 1 : classify
