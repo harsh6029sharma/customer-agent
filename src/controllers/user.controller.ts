@@ -117,7 +117,8 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
     const Options = {
         httpOnly: true,
-        secure: true
+        secure: process.env.NODE_ENV === "production",
+        sameSite: "lax" as const,
     }
 
     return res.status(200)
@@ -135,20 +136,20 @@ const loginUser = asyncHandler(async (req: Request, res: Response) => {
 
 
 const logoutUser = asyncHandler(async (req: Request, res: Response) => {
-  await prisma.user.update({
-    where: { id: req.user.id },
-    data: { refreshToken: null }
-  })
+    await prisma.user.update({
+        where: { id: req.user.id },
+        data: { refreshToken: null }
+    })
 
-  const options = {
-    httpOnly: true,
-    secure: true
-  }
+    const options = {
+        httpOnly: true,
+        secure: true
+    }
 
-  return res.status(200).
-    clearCookie("accessToken", options).clearCookie("refreshToken", options).json(
-      new ApiResponse(200, {}, "User logged out successfully")
-    )
+    return res.status(200).
+        clearCookie("accessToken", options).clearCookie("refreshToken", options).json(
+            new ApiResponse(200, {}, "User logged out successfully")
+        )
 })
 
 

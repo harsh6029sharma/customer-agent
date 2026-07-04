@@ -92,22 +92,40 @@ export const analyzeTicket = async (description: string, userId: number) => {
     const classified = await classifyChain.invoke({ description }) as any
     const { category, priority } = classified
 
-    // Step 2 — Agent decide karega kaunsa tool use karna hai
     console.log(`Agent routing for category: ${category}`)
 
-    // Routing
-    const agentResult = await agent.invoke({
-        messages: [{
-            role: "user",
-            content: `You are a customer support AI.
-            Use the available tools to find relevant information and draft a professional reply.
-            Customer userId: ${userId}
-            Ticket: "${description}"
-            If customer asks about their account or tickets, use check_user_data tool.`
-        }]
-    })
+    let suggestedReply: string;
 
-    const lastMessage = agentResult.messages[agentResult.messages.length - 1]
-    const suggestedReply = lastMessage?.content
+    try {
+        // Step 2 — Agent decide karega kaunsa tool use karna hai
+        const agentResult = await agent.invoke({
+            messages: [{
+                role: "user",
+                content: `You are a customer support AI.
+                Use the available tools to find relevant information and draft a professional reply.
+                Customer userId: ${userId}
+                Ticket: "${description}"
+                If customer asks about their account or tickets, use check_user_data tool.`
+            }]
+        })
+
+        const lastMessage = agentResult.messages[agentResult.messages.length - 1]
+        suggestedReply = (lastMessage?.content as string) ?? ""
+
+        // Kabhi kabhi content empty ya non-string aata hai tool_use_failed ke baad
+        if (!suggestedReply || typeof suggestedReply !== "string") {
+            throw new Error("Empty or invalid agent response")
+        }
+
+    } catch (err) {
+        console.error("Agent tool-calling failed, falling back to direct reply:", err)
+
+        // Fallback: bina tools ke seedha llm se reply generate karo
+        const fallback = await llm.invoke(
+            `You are a customer support AI. Write a short, professional reply to this ticket without using any tools.\nTicket: "${description}"`
+        )
+        suggestedReply = (fallback.content as string) ?? "Thank you for reaching out, our team will get back to you shortly."
+    }
+
     return JSON.stringify({ category, priority, suggestedReply })
 }

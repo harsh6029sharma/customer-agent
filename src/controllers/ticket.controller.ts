@@ -202,9 +202,9 @@ const getAnalytics = asyncHandler(async (req: Request, res: Response) => {
 
     const analyticsData = {
         totalTickets,
-        byCategory: Object.fromEntries(byCategory.map(c => [c.category ?? "UNKNOWN", c._count])),
-        byPriority: Object.fromEntries(byPriority.map(p => [p.priority ?? "UNKNOWN", p._count])),
-        byStatus: Object.fromEntries(byStatus.map(s => [s.status ?? "UNKNOWN", s._count]))
+        byCategory: Object.fromEntries(byCategory.map((c: typeof byCategory[number]) => [c.category ?? "UNKNOWN", c._count])),
+        byPriority: Object.fromEntries(byPriority.map((p: typeof byPriority[number]) => [p.priority ?? "UNKNOWN", p._count])),
+        byStatus: Object.fromEntries(byStatus.map((s: typeof byStatus[number]) => [s.status ?? "UNKNOWN", s._count]))
     }
 
     // store in redis - 5 minutes
