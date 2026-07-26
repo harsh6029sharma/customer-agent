@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Customer Support Agent - Backend Engineering Portal</title>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <!-- Custom Dark Theme Stylesheet -->
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+
+  <div id="app">
+
+    <!-- 1. Authentication View (Login / Register) -->
+    <div id="auth-view" class="auth-wrapper">
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="auth-logo">
+            <i class="fas fa-headset"></i>
+            <span>SupportAgent.io</span>
+          </div>
+          <p class="auth-subtitle">Backend Customer Support Engineering Portal</p>
+        </div>
+
+        <!-- Auth Tabs -->
+        <div style="display: flex; border-bottom: 1px solid var(--border-color); margin-bottom: 1.25rem;">
+          <button type="button" id="auth-tab-login" class="btn" style="flex: 1; border-radius: 0; border-bottom: 2px solid var(--primary); color: var(--text-main); font-weight: 600; padding: 0.6rem;">
+            <i class="fas fa-sign-in-alt"></i> Sign In
+          </button>
+          <button type="button" id="auth-tab-register" class="btn" style="flex: 1; border-radius: 0; border-bottom: 2px solid transparent; color: var(--text-muted); font-weight: 500; padding: 0.6rem;">
+            <i class="fas fa-user-plus"></i> Create Account
+          </button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form">
+          <div class="form-group">
+            <label class="form-label" for="login-email">Email Address <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" id="login-email" class="form-control" placeholder="backend.admin@agent.io" required value="backend.admin@agent.io">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="login-password">Password <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" id="login-password" class="form-control" placeholder="••••••••" required value="admin123">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" id="login-submit-btn">
+            <i class="fas fa-sign-in-alt"></i> Sign In to Console
+          </button>
+        </form>
+
+        <!-- Register Form (Initially Hidden) -->
+        <form id="register-form" class="hidden">
+          <div class="form-group">
+            <label class="form-label" for="register-name">Full Name <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="fas fa-user input-icon"></i>
+              <input type="text" id="register-name" class="form-control" placeholder="Harsh Vardhan" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="register-email">Email Address <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" id="register-email" class="form-control" placeholder="dev@company.com" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="register-role">Engineer Role</label>
+            <select id="register-role" class="form-select">
+              <option value="Backend Engineer">Backend Engineer</option>
+              <option value="Senior Support Engineer">Senior Support Engineer</option>
+              <option value="Systems Administrator">Systems Administrator</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="register-password">Password <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="fas fa-lock input-icon"></i>
+              <input type="password" id="register-password" class="form-control" placeholder="Minimum 6 characters" required minlength="6">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="register-confirm-password">Confirm Password <span class="required">*</span></label>
+            <div class="input-group">
+              <i class="fas fa-check-double input-icon"></i>
+              <input type="password" id="register-confirm-password" class="form-control" placeholder="Repeat password" required minlength="6">
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 0.5rem;" id="register-submit-btn">
+            <i class="fas fa-user-plus"></i> Create Account & Sign In
+          </button>
+        </form>
+
+        <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color); text-align: center;">
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem;">Quick Demo Login Preset:</p>
+          <button type="button" class="btn btn-secondary btn-sm" id="btn-demo-login">
+            <i class="fas fa-user-shield"></i> Use Admin Credentials
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 2. Main Application Layout (Sidebar + Topbar + Dynamic Views) -->
+    <div id="main-app" class="app-layout hidden">
+      
+      <!-- Mobile Backdrop -->
+      <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
+
+      <!-- Sidebar Navigation -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-brand">
+          <i class="fas fa-terminal"></i>
+          <span>SupportAgent</span>
+        </div>
+
+        <nav class="sidebar-nav">
+          <a href="#dashboard" class="nav-item active" data-route="dashboard">
+            <i class="fas fa-chart-line"></i>
+            <span>Dashboard</span>
+          </a>
+          <a href="#tickets" class="nav-item" data-route="tickets">
+            <i class="fas fa-ticket-alt"></i>
+            <span>All Tickets</span>
+          </a>
+          <a href="#kb" class="nav-item" data-route="kb">
+            <i class="fas fa-book-open"></i>
+            <span>Knowledge Base</span>
+          </a>
+          <a href="#analytics" class="nav-item" data-route="analytics">
+            <i class="fas fa-chart-pie"></i>
+            <span>Analytics</span>
+          </a>
+          <a href="#settings" class="nav-item" data-route="settings">
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+        </nav>
+
+        <div class="sidebar-footer">
+          <span>Mode: <strong id="api-mode-badge" class="badge badge-blue">MOCK API</strong></span>
+          <i class="fas fa-server" title="Backend Status"></i>
+        </div>
+      </aside>
+
+      <!-- Main Wrapper -->
+      <div class="main-wrapper">
+        <!-- Top Navbar -->
+        <header class="topbar">
+          <div class="topbar-left">
+            <button class="mobile-toggle" id="mobile-toggle-btn" aria-label="Toggle Sidebar">
+              <i class="fas fa-bars"></i>
+            </button>
+            <h2 class="page-title" id="page-heading">Dashboard</h2>
+          </div>
+
+          <div class="topbar-right">
+            <button class="btn btn-primary btn-sm" id="topbar-create-ticket-btn">
+              <i class="fas fa-plus"></i> New Ticket
+            </button>
+
+            <div class="user-profile">
+              <div class="user-avatar" id="user-avatar-initials">HV</div>
+              <div class="user-info">
+                <span class="user-name" id="user-display-name">Harsh Vardhan</span>
+                <span class="user-role" id="user-display-role">Backend Engineer</span>
+              </div>
+            </div>
+
+            <button class="btn-icon" id="btn-logout" title="Sign Out">
+              <i class="fas fa-sign-out-alt"></i>
+            </button>
+          </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="content">
+
+          <!-- View 1: Dashboard -->
+          <section id="view-dashboard" class="page-view">
+            <!-- Statistics Grid -->
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon blue">
+                  <i class="fas fa-ticket"></i>
+                </div>
+                <div class="stat-details">
+                  <span class="stat-value" id="stat-total-tickets">0</span>
+                  <span class="stat-label">Total Support Tickets</span>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-icon yellow">
+                  <i class="fas fa-exclamation-circle"></i>
+                </div>
+                <div class="stat-details">
+                  <span class="stat-value" id="stat-open-tickets">0</span>
+                  <span class="stat-label">Active / Open Tickets</span>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-icon green">
+                  <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stat-details">
+                  <span class="stat-value" id="stat-resolved-tickets">0</span>
+                  <span class="stat-label">Resolved Tickets</span>
+                </div>
+              </div>
+
+              <div class="stat-card">
+                <div class="stat-icon red">
+                  <i class="fas fa-bolt"></i>
+                </div>
+                <div class="stat-details">
+                  <span class="stat-value" id="stat-avg-time">18m</span>
+                  <span class="stat-label">Avg Response Time</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Two Column Section: Activity & Recent Table -->
+            <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 1.25rem; margin-bottom: 1.5rem;" class="dashboard-grid">
+              <!-- Recent Tickets Summary Table -->
+              <div class="card" style="margin-bottom: 0;">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fas fa-list-ul" style="color: var(--primary); margin-right: 0.5rem;"></i> Recent Tickets</h3>
+                  <a href="#tickets" class="btn btn-secondary btn-sm">View All</a>
+                </div>
+                <div class="card-body" style="padding: 0;">
+                  <div class="table-responsive">
+                    <table class="table">
+                      <thead>
+                        <tr>
+                          <th>ID</th>
+                          <th>Subject</th>
+                          <th>Priority</th>
+                          <th>Status</th>
+                          <th>Action</th>
+                        </tr>
+                      </thead>
+                      <tbody id="dashboard-recent-table-body">
+                        <!-- Dynamic rows -->
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent Activity Feed -->
+              <div class="card" style="margin-bottom: 0;">
+                <div class="card-header">
+                  <h3 class="card-title"><i class="fas fa-history" style="color: var(--primary); margin-right: 0.5rem;"></i> System Activity Feed</h3>
+                </div>
+                <div class="card-body">
+                  <div class="activity-list" id="dashboard-activity-list">
+                    <!-- Dynamic activity items -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 2: All Tickets Table -->
+          <section id="view-tickets" class="page-view hidden">
+            <div class="card">
+              <!-- Filter Controls Header -->
+              <div class="card-header" style="flex-wrap: wrap; gap: 1rem;">
+                <div style="display: flex; align-items: center; gap: 0.75rem; flex: 1; min-width: 260px;">
+                  <div class="input-group" style="width: 100%;">
+                    <i class="fas fa-search input-icon"></i>
+                    <input type="text" id="tickets-search-input" class="form-control" placeholder="Search ticket ID, subject, customer...">
+                  </div>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                  <select id="tickets-status-filter" class="form-select" style="width: 140px;">
+                    <option value="">All Statuses</option>
+                    <option value="OPEN">Open</option>
+                    <option value="IN_PROGRESS">In Progress</option>
+                    <option value="RESOLVED">Resolved</option>
+                    <option value="CLOSED">Closed</option>
+                  </select>
+
+                  <select id="tickets-priority-filter" class="form-select" style="width: 140px;">
+                    <option value="">All Priorities</option>
+                    <option value="HIGH">High</option>
+                    <option value="MEDIUM">Medium</option>
+                    <option value="LOW">Low</option>
+                  </select>
+
+                  <button class="btn btn-primary" id="btn-create-ticket-modal">
+                    <i class="fas fa-plus"></i> New Ticket
+                  </button>
+                </div>
+              </div>
+
+              <!-- Table Content -->
+              <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Ticket ID</th>
+                        <th>Subject</th>
+                        <th>Customer</th>
+                        <th>Category</th>
+                        <th>Priority</th>
+                        <th>Status</th>
+                        <th>Updated</th>
+                        <th>Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody id="tickets-table-body">
+                      <!-- Dynamic rows -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              <div class="card-footer" style="justify-content: space-between;">
+                <span class="pagination-info" id="tickets-pagination-info">Showing 1-5 of 5 tickets</span>
+                <div id="tickets-pagination-controls"></div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 3: Ticket Detail View -->
+          <section id="view-ticket-detail" class="page-view hidden">
+            <div style="margin-bottom: 1rem;">
+              <a href="#tickets" class="btn btn-secondary btn-sm"><i class="fas fa-arrow-left"></i> Back to Tickets</a>
+            </div>
+
+            <div class="card">
+              <div class="card-header" style="flex-wrap: wrap; gap: 1rem;" id="ticket-detail-header">
+                <div>
+                  <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
+                    <span style="font-weight: 700; font-size: 1.1rem; color: var(--text-main);" id="detail-ticket-id">TCK-1001</span>
+                    <span id="detail-status-badge"></span>
+                    <span id="detail-priority-badge"></span>
+                  </div>
+                  <h3 class="card-title" id="detail-ticket-subject" style="font-size: 1.15rem;">Ticket Subject</h3>
+                </div>
+
+                <div style="display: flex; align-items: center; gap: 0.5rem;">
+                  <button class="btn btn-secondary btn-sm" id="btn-change-status">
+                    <i class="fas fa-exchange-alt"></i> Update Status
+                  </button>
+                  <button class="btn btn-danger btn-sm" id="btn-delete-ticket">
+                    <i class="fas fa-trash"></i> Delete
+                  </button>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <!-- Metadata Strip -->
+                <div style="display: flex; gap: 2rem; padding: 0.85rem 1rem; background-color: #181818; border: 1px solid var(--border-color); border-radius: var(--radius-md); margin-bottom: 1.5rem; flex-wrap: wrap;" class="meta-strip">
+                  <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Customer</span>
+                    <strong style="font-size: 0.85rem;" id="detail-customer-name">Alex Rivera</strong>
+                  </div>
+                  <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Email</span>
+                    <span style="font-size: 0.85rem; color: var(--text-main);" id="detail-customer-email">alex@enterprise.co</span>
+                  </div>
+                  <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Category</span>
+                    <span style="font-size: 0.85rem; color: var(--text-main);" id="detail-category">Infrastructure</span>
+                  </div>
+                  <div>
+                    <span style="font-size: 0.75rem; color: var(--text-muted); display: block;">Assigned Engineer</span>
+                    <span style="font-size: 0.85rem; color: var(--text-main);" id="detail-assigned">Harsh Vardhan</span>
+                  </div>
+                </div>
+
+                <!-- Discussion Thread -->
+                <h4 style="font-size: 0.95rem; font-weight: 600; margin-bottom: 1rem;"><i class="fas fa-comments" style="color: var(--primary); margin-right: 0.4rem;"></i> Discussion History</h4>
+                <div class="ticket-thread" id="ticket-discussion-thread">
+                  <!-- Dynamic message bubbles -->
+                </div>
+
+                <!-- Reply Composer Form -->
+                <form id="ticket-reply-form" style="margin-top: 1.5rem; border-top: 1px solid var(--border-color); padding-top: 1.25rem;">
+                  <div class="form-group">
+                    <label class="form-label" for="reply-text">Post Response / Engineer Note</label>
+                    <textarea id="reply-text" class="form-textarea" placeholder="Type your technical reply or resolution update..." required></textarea>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">
+                      <i class="fas fa-robot"></i> RAG AI context assistant active
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="btn-submit-reply">
+                      <i class="fas fa-paper-plane"></i> Send Reply
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 4: Knowledge Base RAG Docs -->
+          <section id="view-kb" class="page-view hidden">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-database" style="color: var(--primary); margin-right: 0.5rem;"></i> Knowledge Base (Vector Store)</h3>
+                <button class="btn btn-primary btn-sm" id="btn-ingest-kb-doc">
+                  <i class="fas fa-upload"></i> Ingest Document
+                </button>
+              </div>
+              <div class="card-body" style="padding: 0;">
+                <div class="table-responsive">
+                  <table class="table">
+                    <thead>
+                      <tr>
+                        <th>Doc ID</th>
+                        <th>File Name</th>
+                        <th>Chunks</th>
+                        <th>Indexing Status</th>
+                        <th>Created Date</th>
+                      </tr>
+                    </thead>
+                    <tbody id="kb-table-body">
+                      <!-- Dynamic KB rows -->
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 5: Analytics -->
+          <section id="view-analytics" class="page-view hidden">
+            <div class="stats-grid" style="margin-bottom: 1.5rem;">
+              <div class="stat-card">
+                <div class="stat-icon green"><i class="fas fa-robot"></i></div>
+                <div class="stat-details">
+                  <span class="stat-value">84%</span>
+                  <span class="stat-label">AI First Contact Resolution</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon blue"><i class="fas fa-clock"></i></div>
+                <div class="stat-details">
+                  <span class="stat-value">18 mins</span>
+                  <span class="stat-label">Average Resolution Time</span>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon yellow"><i class="fas fa-layer-group"></i></div>
+                <div class="stat-details">
+                  <span class="stat-value">4.9 / 5.0</span>
+                  <span class="stat-label">Customer Satisfaction Rating</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-server"></i> System Architecture Status</h3>
+              </div>
+              <div class="card-body">
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+                  Backend service health monitors and vector collection status:
+                </p>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                  <div style="display: flex; justify-content: space-between; padding: 0.6rem 0.85rem; background: #181818; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <span>Express 5.x Server (`/api/v1`)</span>
+                    <span class="badge badge-green">Operational (200 OK)</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 0.6rem 0.85rem; background: #181818; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <span>PostgreSQL Database (`Prisma ORM`)</span>
+                    <span class="badge badge-green">Connected</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding: 0.6rem 0.85rem; background: #181818; border-radius: var(--radius-sm); border: 1px solid var(--border-color);">
+                    <span>ChromaDB Vector Store</span>
+                    <span class="badge badge-green">4 Collections Ready</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 6: Settings -->
+          <section id="view-settings" class="page-view hidden">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title"><i class="fas fa-sliders-h"></i> Portal Configuration</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label class="form-label">Data Source Mode</label>
+                  <div style="display: flex; gap: 1rem; margin-top: 0.25rem;">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+                      <input type="radio" name="api-mode-radio" value="mock" checked id="radio-mode-mock">
+                      Mock JSON Memory Mode (No Backend Required)
+                    </label>
+                    <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; cursor: pointer;">
+                      <input type="radio" name="api-mode-radio" value="live" id="radio-mode-live">
+                      Live Backend Server API (`http://localhost:3000/api/v1`)
+                    </label>
+                  </div>
+                </div>
+
+                <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border-color);">
+                  <button class="btn btn-primary" id="btn-save-settings">Save Preferences</button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- View 7: 404 Not Found -->
+          <section id="view-404" class="page-view hidden">
+            <div class="empty-state" style="padding: 4rem 1rem;">
+              <i class="fas fa-exclamation-triangle empty-icon" style="color: var(--warning);"></i>
+              <h3 class="empty-title" style="font-size: 1.4rem;">404 - Page Not Found</h3>
+              <p class="empty-text">The route or resource you requested does not exist or has been removed.</p>
+              <a href="#dashboard" class="btn btn-primary"><i class="fas fa-home"></i> Back to Dashboard</a>
+            </div>
+          </section>
+
+        </main>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- JavaScript Files -->
+  <script src="js/api.js"></script>
+  <script src="js/components.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
