@@ -2,7 +2,7 @@ import { ChromaClient } from "chromadb";
 import { embeddings } from './embeddings.js'
 
 const client = new ChromaClient({
-    host: "chromadb",
+    host: "localhost",
     port: 8000
 })
 
